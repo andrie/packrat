@@ -125,7 +125,8 @@ snapshot <- function(project = NULL,
                           fallback.ok = FALSE,
                           snapshot.sources = TRUE,
                           implicit.packrat.dependency = TRUE,
-                          infer.dependencies = TRUE) {
+                          infer.dependencies = TRUE,
+                          prune.search.tree = FALSE) {
 
   if (is.null(available))
   {
@@ -190,7 +191,8 @@ snapshot <- function(project = NULL,
                                      available = available,
                                      lib.loc = lib.loc,
                                      recursive = TRUE,
-                                     verbose = verbose)
+                                     verbose = verbose,
+                                     prune.search.tree = prune.search.tree)
 
   # For inferred packages (ie. packages within the code), we try to construct
   # records first from the lockfile, and then from other sources if possible
@@ -204,7 +206,8 @@ snapshot <- function(project = NULL,
                                           check.lockfile = TRUE,
                                           fallback.ok = fallback.ok,
                                           recursive = getOption("packrat.RecursiveInference", default = TRUE),
-                                          verbose = verbose)
+                                          verbose = verbose,
+                                          prune.search.tree = prune.search.tree)
   logger("Done getting package records")
 
   allRecords <- c(
@@ -241,7 +244,8 @@ snapshot <- function(project = NULL,
                           project = project,
                           NULL,
                           recursive = FALSE, lib.loc = lib.loc,
-                          verbose = verbose),
+                          verbose = verbose,
+                          prune.search.tree = prune.search.tree),
         'The following packages are stale:',
         c('These packages must be updated by calling packrat::restore() before\n',
           'snapshotting. If you are sure you want the installed versions of these\n',
