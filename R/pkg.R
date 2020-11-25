@@ -185,10 +185,17 @@ getPackageRecords <- function(pkgNames,
                               missing.package = error_not_installed,
                               check.lockfile = FALSE,
                               fallback.ok = FALSE,
-                              .visited.packages = new.env(parent = emptyenv()))
+                              prune.search.tree = FALSE,
+                              .recursion.level = 1,
+                              .visited.packages = new.env(parent = emptyenv()),
+                              verbose = FALSE)
 {
   project <- getProjectDir(project)
   local.repos <- get_opts("local.repos", project = project)
+
+  if (.recursion.level == 1) {
+    logger <- verboseLogger(verbose)
+  }
 
   # screen out empty package names that might have snuck in
   pkgNames <- setdiff(pkgNames, "")
@@ -268,9 +275,22 @@ getPackageRecords <- function(pkgNames,
   # Remove any null records
   allRecords <- dropNull(allRecords)
 
+  if (.recursion.level == 1) {
+    .nnn <- length(allRecords)
+    .iii <- 1
+  }
+  if (prune.search.tree) {
+    pkgNames <- setdiff(pkgNames, ls(envir = .visited.packages))
+    for (pkg in pkgNames) { .visited.packages[[pkg]] <- TRUE }
+  }
+
   # Now get recursive package dependencies if necessary
   if (recursive) {
     allRecords <- lapply(allRecords, function(record) {
+      if (.recursion.level == 1 && verbose) {
+        logger(sprintf("- getting dependency %3i of %3i %s", .iii, .nnn, record$name))
+        .iii <<- .iii + 1
+      }
       if (exists(record$name, envir = .visited.packages)) {
         # We have already processed this package and computed its recursive
         # dependencies. Avoid recursively computing its dependencies.
@@ -295,6 +315,7 @@ getPackageRecords <- function(pkgNames,
         }
         .visited.packages[[record$name]] <- record
         record
+
       }
     })
   }
