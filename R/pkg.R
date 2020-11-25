@@ -185,7 +185,6 @@ getPackageRecords <- function(pkgNames,
                               missing.package = error_not_installed,
                               check.lockfile = FALSE,
                               fallback.ok = FALSE,
-                              prune.search.tree = FALSE,
                               .recursion.level = 1,
                               .visited.packages = new.env(parent = emptyenv()),
                               verbose = FALSE)
@@ -283,10 +282,8 @@ getPackageRecords <- function(pkgNames,
     .nnn <- length(allRecords)
     .iii <- 1
   }
-  if (prune.search.tree) {
-    pkgNames <- setdiff(pkgNames, ls(envir = .visited.packages))
-    for (pkg in pkgNames) { .visited.packages[[pkg]] <- TRUE }
-  }
+  pkgNames <- setdiff(pkgNames, ls(envir = .visited.packages))
+  for (pkg in pkgNames) { .visited.packages[[pkg]] <- TRUE }
 
   # Now get recursive package dependencies if necessary
   if (recursive) {
@@ -314,7 +311,8 @@ getPackageRecords <- function(pkgNames,
             missing.package = missing.package,
             check.lockfile = check.lockfile,
             fallback.ok = fallback.ok,
-            .visited.packages = .visited.packages
+            .visited.packages = .visited.packages,
+            .recursion.level = .recursion.level + 1
           )
         }
         .visited.packages[[record$name]] <- record
